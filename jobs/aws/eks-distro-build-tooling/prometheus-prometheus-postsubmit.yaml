@@ -14,7 +14,7 @@
 
 postsubmits:
   vignesh-goutham/eks-distro-build-tooling:
-  - name: amazon-eks-pod-identity-webhook-tooling-postsubmit
+  - name: prometheus-prometheus-tooling-postsubmit
     always_run: false
     run_if_changed: "projects/aws/amazon-eks-pod-identity-webhook/.*"
     max_concurrency: 10

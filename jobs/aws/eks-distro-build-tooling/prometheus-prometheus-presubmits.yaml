@@ -14,7 +14,7 @@
 
 presubmits:
   vignesh-goutham/eks-distro-build-tooling:
-  - name: prometheus-prometheus-presubmit
+  - name: prometheus-prometheus-tooling-presubmit
     always_run: false
     run_if_changed: "projects/prometheus/prometheus/.*"
     max_concurrency: 10
