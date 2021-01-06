@@ -12,23 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-presubmits:
-  vignesh-goutham/eks-distro:
-  - name: node-driver-registrar-presubmit
+postsubmits:
+  aws/eks-distro-build-tooling:
+  - name: prometheus-prometheus-tooling-postsubmit
     always_run: false
-    run_if_changed: "projects/kubernetes-csi/node-driver-registrar/.*"
+    run_if_changed: "projects/prometheus/prometheus/.*"
     max_concurrency: 10
-    cluster: "prow-presubmits-cluster"
+    cluster: "prow-postsubmits-cluster"
+    branches:
+    - ^main$
     skip_report: false
     decoration_config:
       gcs_configuration:
-        bucket: s3://prow-data-presubmits-devstack-prowbucket7c73355c-s1n9dan0yprp
+        bucket: s3://prowdataclusterstack-316434458-prowbucket7c73355c-1n9f9v93wpjcm
         path_strategy: explicit
       s3_credentials_secret: s3-credentials
     labels:
       image-build: "true"
     spec:
-      serviceaccountName: presubmits-build-account
+      serviceaccountName: postsubmits-build-account
       containers:
       - name: build-container
         image: 316434458148.dkr.ecr.us-west-2.amazonaws.com/eks-distro/builder:89f14256cd7775881251aeb85900cf7835f711a4
@@ -36,7 +38,7 @@ presubmits:
         - bash
         - -c
         - >
-          make build -C projects/kubernetes-csi/node-driver-registrar DEVELOPMENT=false
+          make release -C projects/prometheus/prometheus IMAGE_TAG=$PULL_BASE_SHA
           &&
           touch /status/done
         livenessProbe:
@@ -46,13 +48,6 @@ presubmits:
             - -c
             - date +%s > /status/pending
           periodSeconds: 10
-        resources:
-          requests:
-            memory: "4Gi"
-            cpu: "1024m"
-          limits:
-            memory: "4Gi"
-            cpu: "1024m"
       - name: buildkitd
         image: moby/buildkit:master-rootless
         command:

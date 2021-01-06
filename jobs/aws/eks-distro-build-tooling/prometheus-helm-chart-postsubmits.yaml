@@ -12,32 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-presubmits:
+postsubmits:
   vignesh-goutham/eks-distro-build-tooling:
-  - name: helm-chart-tooling-presubmit
+  - name: helm-chart-tooling-postsubmit
     always_run: false
-    run_if_changed: "helm-charts/*"
-    cluster: "prow-presubmits-cluster"
+    run_if_changed: '^(helm-charts/*|projects/prometheus-community/helm-charts/*)$'
+    cluster: "prow-postsubmits-cluster"
     max_concurrency: 10
+    branches:
+    - ^main$
     skip_report: false
     decoration_config:
       gcs_configuration:
-        bucket: s3://prow-data-presubmits-devstack-prowbucket7c73355c-s1n9dan0yprp
+        bucket: s3://prow-data-devstack-prowbucket7c73355c-vtugt5nnvs26
         path_strategy: explicit
       s3_credentials_secret: s3-credentials
     spec:
-      serviceaccountName: presubmits-build-account
+      serviceaccountName: charts-build-account
       containers:
       - image: 316434458148.dkr.ecr.us-west-2.amazonaws.com/eks-distro/builder:89f14256cd7775881251aeb85900cf7835f711a4
         command:
         - bash
         - -c
         - >
-          make verify -C helm-charts
-        resources:
-          requests:
-            memory: "2Gi"
-            cpu: "512m"
-          limits:
-            memory: "2Gi"
-            cpu: "512m"
+          make release -C projects/prometheus-community/helm-charts

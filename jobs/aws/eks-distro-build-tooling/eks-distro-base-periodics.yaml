@@ -25,6 +25,9 @@ periodics:
       path_strategy: explicit
     s3_credentials_secret: s3-credentials
   extra_refs:
+  - org: aws
+    repo: eks-distro-build-tooling
+    base_ref: main
   - org: eks-distro-pr-bot
     repo: eks-distro-build-tooling
     base_ref: main
@@ -35,14 +38,17 @@ periodics:
     serviceaccountName: periodics-build-account
     containers:
     - name: build-container
-      image: 316434458148.dkr.ecr.us-west-2.amazonaws.com/eks-distro/builder:e35d4971088ca37db784caf525373f7342126bf3
+      image: 316434458148.dkr.ecr.us-west-2.amazonaws.com/eks-distro/builder:89f14256cd7775881251aeb85900cf7835f711a4
       command:
       - bash
       - -c
       - >
-        ./eks-distro-base/check_update.sh
+        make update -C eks-distro-base
         &&
         touch /status/done;
+      env:
+      - name: REPO_OWNER
+        value: "aws"
       volumeMounts:
       - name: ssh-auth
         mountPath: /secrets/ssh-secrets

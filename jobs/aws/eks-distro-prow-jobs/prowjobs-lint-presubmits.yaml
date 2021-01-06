@@ -13,16 +13,16 @@
 # limitations under the License.
 
 presubmits:
-  vignesh-goutham/eks-distro:
-  - name: node-driver-registrar-presubmit
+  aws/eks-distro-prow-jobs:
+  - name: prowjobs-lint-presubmit
     always_run: false
-    run_if_changed: "projects/kubernetes-csi/node-driver-registrar/.*"
+    run_if_changed: "jobs/aws/.*"
     max_concurrency: 10
     cluster: "prow-presubmits-cluster"
     skip_report: false
     decoration_config:
       gcs_configuration:
-        bucket: s3://prow-data-presubmits-devstack-prowbucket7c73355c-s1n9dan0yprp
+        bucket: s3://prowpresubmitsdataclusterstack-prowbucket7c73355c-vfwwxd2eb4gp
         path_strategy: explicit
       s3_credentials_secret: s3-credentials
     labels:
@@ -31,21 +31,12 @@ presubmits:
       serviceaccountName: presubmits-build-account
       containers:
       - name: build-container
-        image: 316434458148.dkr.ecr.us-west-2.amazonaws.com/eks-distro/builder:89f14256cd7775881251aeb85900cf7835f711a4
+        image: 316434458148.dkr.ecr.us-west-2.amazonaws.com/eks-distro/builder:e35d4971088ca37db784caf525373f7342126bf3
         command:
         - bash
         - -c
         - >
-          make build -C projects/kubernetes-csi/node-driver-registrar DEVELOPMENT=false
-          &&
-          touch /status/done
-        livenessProbe:
-          exec:
-            command:
-            - bash
-            - -c
-            - date +%s > /status/pending
-          periodSeconds: 10
+          go run scripts/lint_prowjobs.go
         resources:
           requests:
             memory: "4Gi"
@@ -53,19 +44,3 @@ presubmits:
           limits:
             memory: "4Gi"
             cpu: "1024m"
-      - name: buildkitd
-        image: moby/buildkit:master-rootless
-        command:
-        - sh
-        args:
-        - /script/entrypoint.sh
-        livenessProbe:
-          exec:
-            command:
-            - sh
-            - -c
-            - test $(($(date +%s) - 15)) -lt $(cat /status/pending)
-          periodSeconds: 15
-        securityContext:
-          runAsUser: 1000
-          runAsGroup: 1000
